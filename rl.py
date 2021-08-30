@@ -1,6 +1,12 @@
 from adafruit_servokit import ServoKit
 import pygame
 import os
+import cv2
+from utils import clamp
+
+from drivers.joystick_driver import JoystickDriver
+
+should_display = "DISPLAY" in os.environ and True
 
 # init joystick
 os.putenv('SDL_VIDEODRIVER', 'dummy')
@@ -12,22 +18,40 @@ joystick.init()
 # init servos
 kit = ServoKit(channels=16)
 
+# init camera
+vid = cv2.VideoCapture(0)
+
 # constants
 steering_offset = 18
 
 # joystick constants
 joystick_throttle_scalar = 0.05
 
-def clamp(value, min, max):
-    if value < min:
-        return min
-    if value > max:
-        return max
+def imshow(title, img):
+    if should_display:
+        cv2.imshow(title, img)
 
-    return value
+driver = JoystickDriver(joystick)
 
 while True:
-    pygame.event.pump()
+    ret, frame = vid.read()
 
-    kit.servo[1].angle = clamp(90 * joystick.get_axis(0) + 90 + steering_offset, 0, 180)
-    kit.continuous_servo[2].throttle = ((joystick.get_axis(5) + 1) / 2) * joystick_throttle_scalar
+    if not ret:
+        break
+
+    pygame.event.pump()
+    print("running")
+
+    # imshow("frame", frame)
+
+    steering, throttle = driver.get_controls()
+
+    kit.servo[1].angle = clamp(steering + 90 + steering_offset, 0, 180)
+    kit.continuous_servo[2].throttle = throttle
+
+    if should_display and cv2.waitKey(25) & 0xFF == ord("q"):
+        kit.continuous_servo[2].throttle = 0.0
+        break
+
+if should_display:
+    cv2.destroyAllWindows() 
