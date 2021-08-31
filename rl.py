@@ -54,18 +54,22 @@ while True:
     # writer.write(steering, throttle, scale)
 
     is_in_lane = lane_detector.check_lane(scale)
+    counter = lane_detector.get_track_pos(scale)
+
+    print(counter)
 
     has_not_left_lane = has_not_left_lane and is_in_lane
     if not has_not_left_lane:
         throttle = 0
 
-    has_crossed_finish = lane_detector.check_finish2(steering, has_not_left_lane)
+    has_crossed_finish = lane_detector.check_finish(scale, has_not_left_lane)
 
     if has_crossed_finish:
         print("finish")
 
     if joystick.get_button(0):
         has_not_left_lane = True
+        lane_detector.reset()
 
     if joystick.get_button(1):
         has_not_left_lane = False

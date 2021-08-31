@@ -18,7 +18,11 @@ yellow_v_high = 230
 
 class LaneDetector:
     def __init__(self):
+        self.reset()
+
+    def reset(self):
         self._counter = 0
+        self._prev_yellow = False
 
     def check_lane(self, frame):
         frame = frame[40:, :, :]
@@ -40,6 +44,8 @@ class LaneDetector:
         return np.any(yellow_mask)
 
     def check_finish(self, frame, has_not_left_lane):
+        return False
+
         frame = frame[-10:, 75:85, :]
         blur = cv2.GaussianBlur(frame,(5,5),0)
         hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
@@ -55,5 +61,30 @@ class LaneDetector:
 
         return has_not_left_lane and np.any(white_mask)
 
-    def check_finish2(self, steering, has_not_left_lane):
-        return has_not_left_lane and steering <= -0.1
+    def get_track_pos(self, frame):
+        frame = frame[80:90, :, :]
+
+        blur = cv2.GaussianBlur(frame,(5,5),0)
+        hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
+
+        # x = 150
+        # y = 20
+        # print(hsv[y, x, :])
+        # cv2.circle(blur, (x, y), 2, (255, 0, 255), -1)
+
+        yellow_lower = np.array([yellow_h_low, yellow_s_low, yellow_v_low])
+        yellow_upper = np.array([yellow_h_high, yellow_s_high, yellow_v_high])
+        yellow_mask = cv2.inRange(hsv, yellow_lower, yellow_upper)
+
+        has_mask = np.any(yellow_mask)
+
+        if not has_mask:
+            self._prev_yellow = False
+
+        if has_mask and not self._prev_yellow:
+            self._prev_yellow = True
+            self._counter += 1
+
+        imshow("yellow_mask", yellow_mask)
+
+        return self._counter
