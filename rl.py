@@ -5,7 +5,7 @@ import cv2
 from utils import clamp
 import time
 
-from drivers.joystick_driver import JoystickDriver
+from drivers.ai_driver import AiDriver
 from writers.file_writer import FileWriter
 
 should_display = "DISPLAY" in os.environ and False
@@ -28,14 +28,11 @@ steering_offset = 18
 recording_freq = 15
 recording_duration = 1 / recording_freq
 
-# joystick constants
-joystick_throttle_scalar = 0.05
-
 def imshow(title, img):
     if should_display:
         cv2.imshow(title, img)
 
-driver = JoystickDriver(joystick)
+driver = AiDriver()
 writer = FileWriter()
 
 print("starting...")
@@ -53,8 +50,10 @@ while True:
 
     imshow("scale", scale)
 
-    steering, throttle = driver.get_controls()
+    steering, throttle = driver.get_controls(scale)
     writer.write(steering, throttle, scale)
+
+    steering *= 90
 
     kit.servo[1].angle = clamp(steering + 90 + steering_offset, 0, 180)
     kit.continuous_servo[2].throttle = throttle

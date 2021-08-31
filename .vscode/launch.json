@@ -5,10 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Python: rl.py",
             "type": "python",
             "request": "launch",
             "program": "rl.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: train.py",
+            "type": "python",
+            "request": "launch",
+            "program": "train.py",
             "console": "integratedTerminal"
         }
     ]
