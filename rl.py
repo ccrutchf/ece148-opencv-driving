@@ -37,6 +37,8 @@ lane_detector = LaneDetector()
 print("starting...")
 
 has_not_left_lane = True
+laptime = None
+prev_laptime = None
 while True:
     start_time = time.time()
     ret, frame = vid.read()
@@ -51,12 +53,10 @@ while True:
     imshow("scale", scale)
 
     steering, throttle = driver.get_controls(scale)
-    # writer.write(steering, throttle, scale)
+    writer.write(steering, throttle, scale)
 
     is_in_lane = lane_detector.check_lane(scale)
     counter = lane_detector.get_track_pos(scale)
-
-    print(counter)
 
     has_not_left_lane = has_not_left_lane and is_in_lane
     if not has_not_left_lane:
@@ -66,6 +66,14 @@ while True:
 
     if has_crossed_finish:
         print("finish")
+
+        lane_detector.reset()
+        laptime = time.time()
+
+        if prev_laptime is not None:
+            print(laptime - prev_laptime)
+
+        prev_laptime = laptime
 
     if joystick.get_button(0):
         has_not_left_lane = True

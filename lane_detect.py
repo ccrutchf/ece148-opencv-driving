@@ -2,12 +2,12 @@ import cv2
 import numpy as np
 from utils import imshow
 
-white_h_low = 0
-white_h_high = 60
-white_s_low = 0
-white_s_high = 20
-white_v_low = 130
-white_v_high = 160
+white_h_low = 105
+white_h_high = 115
+white_s_low = 170
+white_s_high = 185
+white_v_low = 200
+white_v_high = 240
 
 yellow_h_low = 15
 yellow_h_high = 25
@@ -19,6 +19,7 @@ yellow_v_high = 230
 class LaneDetector:
     def __init__(self):
         self.reset()
+        self._has_prev_cross = False
 
     def reset(self):
         self._counter = 0
@@ -44,14 +45,13 @@ class LaneDetector:
         return np.any(yellow_mask)
 
     def check_finish(self, frame, has_not_left_lane):
-        return False
+        frame = frame[40:, :, :]
 
-        frame = frame[-10:, 75:85, :]
         blur = cv2.GaussianBlur(frame,(5,5),0)
         hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
 
-        # x = 400
-        # y = 100
+        # x = 40
+        # y = 8
         # print(hsv[y, x, :])
         # cv2.circle(blur, (x, y), 4, (255, 0, 255), -1)
 
@@ -59,7 +59,20 @@ class LaneDetector:
         white_upper = np.array([white_h_high, white_s_high, white_v_high])
         white_mask = cv2.inRange(hsv, white_lower, white_upper)
 
-        return has_not_left_lane and np.any(white_mask)
+        imshow("blur", blur)
+        imshow("white_mask", white_mask)
+
+        has_crossed = has_not_left_lane and np.any(white_mask)
+        prev_has_prev_cross = self._has_prev_cross
+
+        if not has_crossed:
+            self._has_prev_cross = False
+        else:
+            self._has_prev_cross = True
+
+        has_crossed = has_crossed and not prev_has_prev_cross
+
+        return has_crossed
 
     def get_track_pos(self, frame):
         frame = frame[80:90, :, :]
