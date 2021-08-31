@@ -2,14 +2,13 @@ from adafruit_servokit import ServoKit
 import pygame
 import os
 import cv2
-from utils import clamp
+from utils import clamp, should_display, imshow
 import time
+from lane_detect import LaneDetector
 
 from drivers.ai_driver import AiDriver
 from drivers.joystick_driver import JoystickDriver
 from writers.file_writer import FileWriter
-
-should_display = "DISPLAY" in os.environ and False
 
 # init joystick
 os.putenv('SDL_VIDEODRIVER', 'dummy')
@@ -29,13 +28,11 @@ steering_offset = 18
 recording_freq = 15
 recording_duration = 1 / recording_freq
 
-def imshow(title, img):
-    if should_display:
-        cv2.imshow(title, img)
-
 # driver = AiDriver()
 driver = JoystickDriver(joystick)
 writer = FileWriter()
+
+lane_detector = LaneDetector()
 
 print("starting...")
 
@@ -57,10 +54,12 @@ while True:
 
     steering *= 90
 
+    is_in_lane = lane_detector.check_lane(scale)
+    if not is_in_lane:
+        print("you left the track")
+
     kit.servo[1].angle = clamp(steering + 90 + steering_offset, 0, 180)
     kit.continuous_servo[2].throttle = throttle
-
-    print(throttle)
 
     if should_display and cv2.waitKey(25) & 0xFF == ord("q"):
         kit.continuous_servo[2].throttle = 0.0
