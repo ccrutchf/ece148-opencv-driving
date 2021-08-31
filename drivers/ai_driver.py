@@ -1,5 +1,5 @@
 from .driver import Driver
-from network_model import create_network
+from network_model import create_network, device
 import torch
 from torchvision import transforms
 import PIL
@@ -16,4 +16,9 @@ class AiDriver(Driver):
     def get_controls(self, frame):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         with PIL.Image.fromarray(frame) as im:
-            return self._net.predict(im)
+            tensor = transform(im).to(device)
+            tensor = tensor[None, :, :, :]
+
+            results = self._net.forward(tensor)
+
+            return (float(results.data[0, 0]), float(results.data[0, 1]) * 1.2)
