@@ -36,6 +36,7 @@ lane_detector = LaneDetector()
 
 print("starting...")
 
+has_not_left_lane = True
 while True:
     start_time = time.time()
     ret, frame = vid.read()
@@ -52,11 +53,24 @@ while True:
     steering, throttle = driver.get_controls(scale)
     # writer.write(steering, throttle, scale)
 
-    steering *= 90
-
     is_in_lane = lane_detector.check_lane(scale)
-    if not is_in_lane:
-        print("you left the track")
+
+    has_not_left_lane = has_not_left_lane and is_in_lane
+    if not has_not_left_lane:
+        throttle = 0
+
+    has_crossed_finish = lane_detector.check_finish2(steering, has_not_left_lane)
+
+    if has_crossed_finish:
+        print("finish")
+
+    if joystick.get_button(0):
+        has_not_left_lane = True
+
+    if joystick.get_button(1):
+        has_not_left_lane = False
+
+    steering *= 90
 
     kit.servo[1].angle = clamp(steering + 90 + steering_offset, 0, 180)
     kit.continuous_servo[2].throttle = throttle

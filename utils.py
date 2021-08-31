@@ -1,7 +1,7 @@
 import os
 import cv2
 
-should_display = "DISPLAY" in os.environ and True
+should_display = "DISPLAY" in os.environ and False
 
 def imshow(title, img):
     if should_display:
