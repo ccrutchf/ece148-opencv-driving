@@ -10,7 +10,7 @@ from drivers.ai_driver import AiDriver
 from drivers.joystick_driver import JoystickDriver
 from writers.file_writer import FileWriter
 
-should_train = False
+should_train = True
 
 # init joystick
 os.putenv('SDL_VIDEODRIVER', 'dummy')
@@ -30,15 +30,15 @@ steering_offset = 18
 recording_freq = 15
 recording_duration = 1 / recording_freq
 
-# driver = AiDriver()
-driver = JoystickDriver(joystick)
+driver = AiDriver()
+# driver = JoystickDriver(joystick)
 writer = FileWriter()
 
 lane_detector = LaneDetector()
 
 print("starting...")
 
-has_not_left_lane = True
+has_not_left_lane = False
 lap_start = None
 prev_lap_start = None
 while True:
@@ -55,10 +55,11 @@ while True:
     imshow("scale", scale)
 
     steering, throttle = driver.get_controls(scale)
-    writer.write(steering, throttle, scale)
+    # writer.write(steering, throttle, scale)
 
     is_in_lane = lane_detector.check_lane(scale)
     track_segment = lane_detector.get_track_pos(scale)
+    # print(track_segment)
 
     if isinstance(driver, AiDriver):
         driver.set_track_segment(track_segment)
@@ -77,28 +78,38 @@ while True:
 
         if prev_lap_start is not None:
             laptime = lap_start - prev_lap_start
-            if isinstance(driver, AiDriver):
-                driver.add_laptime(laptime)
 
-            print(laptime)
+            if laptime >= 1:
+                if isinstance(driver, AiDriver):
+                    driver.add_laptime(laptime)
+
+                print(laptime)
 
         prev_lap_start = lap_start
 
     if joystick.get_button(0):
         has_not_left_lane = True
         lane_detector.reset()
+        prev_lap_start = None
 
     if joystick.get_button(1):
         has_not_left_lane = False
 
     steering *= 90
 
+    throttle = clamp(throttle, 0, 0.2)
+
     kit.servo[1].angle = clamp(steering + 90 + steering_offset, 0, 180)
     kit.continuous_servo[2].throttle = throttle
 
     if prev_lap_start is not None and isinstance(driver, AiDriver) and should_train:
-        inv_reward = (time.time() - lap_start) / track_segment
+        inv_reward = (time.time() - lap_start) / (track_segment + 1)
         inv_value = driver.get_estimate_laptime_remaining(lap_start)
+
+        if not has_not_left_lane:
+            inv_reward = 1000
+            inv_value = 1000
+
         driver.reinforce(inv_reward, inv_value)
 
     if should_display and cv2.waitKey(25) & 0xFF == ord("q"):

@@ -14,10 +14,10 @@ class AiDriver(Driver):
         self._net.load_state_dict(torch.load("model.dat"))
         self._laptime_list = []
         self._current_segment = 0
-        self._optimizer = torch.optim.SGD(self._net.parameters(), lr=0.02)
+        self._optimizer = torch.optim.SGD(self._net.parameters(), lr=0.2)
 
         self._segment_count = 64
-        self._discount_factor = 0.1
+        self._discount_factor = 0.01
 
     def get_controls(self, frame):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -27,7 +27,7 @@ class AiDriver(Driver):
 
             results = self._net.forward(tensor)
 
-            return (float(results.data[0, 0]), float(results.data[0, 1]) * 1.2)
+            return (float(results.data[0, 0]), float(results.data[0, 1]))
 
     def add_laptime(self, laptime):
         self._laptime_list.append(laptime)
@@ -35,7 +35,13 @@ class AiDriver(Driver):
         if len(self._laptime_list) > 4:
             self._laptime_list.pop(0)
 
+        print('saving')
+        torch.save(self._net.state_dict(), "model.dat")
+
     def get_avg_laptime(self):
+        if not self._laptime_list:
+            return 0
+
         return sum(self._laptime_list) / len(self._laptime_list)
 
     def set_track_segment(self, segment):
@@ -47,7 +53,10 @@ class AiDriver(Driver):
         )
 
     def _loss(self, inv_reward, inv_value):
-        return torch.add(inv_reward, inv_value * self._discount_factor)
+        result = torch.add(inv_reward, inv_value * self._discount_factor)
+        result.requires_grad = True
+
+        return result
 
     def reinforce(self, inv_reward, inv_value):
         loss = self._loss(inv_reward, inv_value)
