@@ -92,6 +92,9 @@ while True:
         lane_detector.reset()
         prev_lap_start = None
 
+        if isinstance(driver, AiDriver):
+            driver.save()
+
     if joystick.get_button(1):
         has_not_left_lane = False
 
