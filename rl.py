@@ -10,6 +10,8 @@ from drivers.ai_driver import AiDriver
 from drivers.joystick_driver import JoystickDriver
 from writers.file_writer import FileWriter
 
+should_train = False
+
 # init joystick
 os.putenv('SDL_VIDEODRIVER', 'dummy')
 pygame.display.init()
@@ -37,8 +39,8 @@ lane_detector = LaneDetector()
 print("starting...")
 
 has_not_left_lane = True
-laptime = None
-prev_laptime = None
+lap_start = None
+prev_lap_start = None
 while True:
     start_time = time.time()
     ret, frame = vid.read()
@@ -56,7 +58,10 @@ while True:
     writer.write(steering, throttle, scale)
 
     is_in_lane = lane_detector.check_lane(scale)
-    counter = lane_detector.get_track_pos(scale)
+    track_segment = lane_detector.get_track_pos(scale)
+
+    if isinstance(driver, AiDriver):
+        driver.set_track_segment(track_segment)
 
     has_not_left_lane = has_not_left_lane and is_in_lane
     if not has_not_left_lane:
@@ -68,12 +73,16 @@ while True:
         print("finish")
 
         lane_detector.reset()
-        laptime = time.time()
+        lap_start = time.time()
 
-        if prev_laptime is not None:
-            print(laptime - prev_laptime)
+        if prev_lap_start is not None:
+            laptime = lap_start - prev_lap_start
+            if isinstance(driver, AiDriver):
+                driver.add_laptime(laptime)
 
-        prev_laptime = laptime
+            print(laptime)
+
+        prev_lap_start = lap_start
 
     if joystick.get_button(0):
         has_not_left_lane = True
@@ -86,6 +95,11 @@ while True:
 
     kit.servo[1].angle = clamp(steering + 90 + steering_offset, 0, 180)
     kit.continuous_servo[2].throttle = throttle
+
+    if prev_lap_start is not None and isinstance(driver, AiDriver) and should_train:
+        inv_reward = (time.time() - lap_start) / track_segment
+        inv_value = driver.get_estimate_laptime_remaining(lap_start)
+        driver.reinforce(inv_reward, inv_value)
 
     if should_display and cv2.waitKey(25) & 0xFF == ord("q"):
         kit.continuous_servo[2].throttle = 0.0

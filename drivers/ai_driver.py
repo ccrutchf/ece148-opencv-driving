@@ -12,6 +12,12 @@ class AiDriver(Driver):
     def __init__(self):
         self._net = create_network()
         self._net.load_state_dict(torch.load("model.dat"))
+        self._laptime_list = []
+        self._current_segment = 0
+        self._optimizer = torch.optim.SGD(self._net.parameters(), lr=0.02)
+
+        self._segment_count = 64
+        self._discount_factor = 0.1
 
     def get_controls(self, frame):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -22,3 +28,30 @@ class AiDriver(Driver):
             results = self._net.forward(tensor)
 
             return (float(results.data[0, 0]), float(results.data[0, 1]) * 1.2)
+
+    def add_laptime(self, laptime):
+        self._laptime_list.append(laptime)
+
+        if len(self._laptime_list) > 4:
+            self._laptime_list.pop(0)
+
+    def get_avg_laptime(self):
+        return sum(self._laptime_list) / len(self._laptime_list)
+
+    def set_track_segment(self, segment):
+        self._current_segment = segment
+
+    def get_estimate_laptime_remaining(self, lap_start):
+        return (
+            self.get_avg_laptime() * float(self._segment_count - self._current_segment) / float(self._segment_count)
+        )
+
+    def _loss(self, inv_reward, inv_value):
+        return torch.add(inv_reward, inv_value * self._discount_factor)
+
+    def reinforce(self, inv_reward, inv_value):
+        loss = self._loss(inv_reward, inv_value)
+
+        self._optimizer.zero_grad()
+        loss.backward()
+        self._optimizer.step()
