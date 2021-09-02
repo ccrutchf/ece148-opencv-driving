@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import os
 
-should_display = "DISPLAY" in os.environ and True
+should_display = "DISPLAY" in os.environ and False
 
 white_h_low = 0
 white_h_high = 35
@@ -12,11 +12,19 @@ white_s_high = 15
 white_v_low = 210
 white_v_high = 240
 
-yellow_h_low = 20
+# yellow_h_low = 20
+# yellow_h_high = 25
+# yellow_s_low = 30
+# yellow_s_high = 120
+# yellow_v_low = 190
+# yellow_v_high = 230
+
+
+yellow_h_low = 15
 yellow_h_high = 25
 yellow_s_low = 30
 yellow_s_high = 120
-yellow_v_low = 190
+yellow_v_low = 110
 yellow_v_high = 230
 
 steering_scalar = 0.12
@@ -189,7 +197,7 @@ def main():
         print(steering)
 
         kit.servo[1].angle = clamp(steering + 95, 0, 180)
-        kit.continuous_servo[2].throttle = 0.2
+        kit.continuous_servo[2].throttle = 0.15
 
         # imshow("frame", frame)
         if should_display and cv2.waitKey(25) & 0xFF == ord("q"):

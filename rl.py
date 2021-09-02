@@ -30,8 +30,8 @@ steering_offset = 18
 recording_freq = 15
 recording_duration = 1 / recording_freq
 
-driver = AiDriver()
-# driver = JoystickDriver(joystick)
+# driver = AiDriver()
+driver = JoystickDriver(joystick)
 writer = FileWriter()
 
 lane_detector = LaneDetector()
@@ -55,7 +55,7 @@ while True:
     imshow("scale", scale)
 
     steering, throttle = driver.get_controls(scale)
-    # writer.write(steering, throttle, scale)
+    writer.write(steering, throttle, scale)
 
     is_in_lane = lane_detector.check_lane(scale)
     track_segment = lane_detector.get_track_pos(scale)
@@ -101,6 +101,9 @@ while True:
     steering *= 90
 
     throttle = clamp(throttle, 0, 0.2)
+
+    if throttle == 0.2:
+        print(throttle)
 
     kit.servo[1].angle = clamp(steering + 90 + steering_offset, 0, 180)
     kit.continuous_servo[2].throttle = throttle

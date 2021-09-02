@@ -19,7 +19,7 @@ class AiDriver(Driver):
         self._net.load_state_dict(torch.load(self._get_model_path()))
         self._laptime_list = []
         self._current_segment = 0
-        self._optimizer = torch.optim.SGD(self._net.parameters(), lr=0.2)
+        self._optimizer = torch.optim.SGD(self._net.parameters(), lr=0.02)
 
         self._segment_count = 64
         self._discount_factor = 0.01
@@ -52,6 +52,9 @@ class AiDriver(Driver):
             self._laptime_list.pop(0)
 
         self.save()
+
+        with open("laptimes.txt", "a") as f:
+            f.write("{laptime}\n".format(laptime=laptime))
 
     def get_avg_laptime(self):
         if not self._laptime_list:
