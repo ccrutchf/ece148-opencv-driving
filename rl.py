@@ -30,8 +30,8 @@ steering_offset = 18
 recording_freq = 15
 recording_duration = 1 / recording_freq
 
-# driver = AiDriver()
-driver = JoystickDriver(joystick)
+driver = AiDriver()
+# driver = JoystickDriver(joystick)
 writer = FileWriter()
 
 lane_detector = LaneDetector()
@@ -55,7 +55,7 @@ while True:
     imshow("scale", scale)
 
     steering, throttle = driver.get_controls(scale)
-    writer.write(steering, throttle, scale)
+    # writer.write(steering, throttle, scale)
 
     is_in_lane = lane_detector.check_lane(scale)
     track_segment = lane_detector.get_track_pos(scale)
@@ -66,6 +66,7 @@ while True:
 
     has_not_left_lane = has_not_left_lane and is_in_lane
     if not has_not_left_lane:
+        # print("left lane")
         throttle = 0
 
     has_crossed_finish = lane_detector.check_finish(scale, has_not_left_lane)
@@ -113,8 +114,11 @@ while True:
         inv_value = driver.get_estimate_laptime_remaining(lap_start)
 
         if not has_not_left_lane:
-            inv_reward = 1000
-            inv_value = 1000
+            inv_reward = 60
+            inv_value = 60
+
+        inv_reward /= 90
+        inv_value /= 90
 
         driver.reinforce(inv_reward, inv_value)
 

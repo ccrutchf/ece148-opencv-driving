@@ -178,3 +178,5 @@ cython_debug/
 data
 model*.dat
 temp*
+laptimes.txt
+not_in_lane.jpg

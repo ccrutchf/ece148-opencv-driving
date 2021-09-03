@@ -19,7 +19,7 @@ class AiDriver(Driver):
         self._net.load_state_dict(torch.load(self._get_model_path()))
         self._laptime_list = []
         self._current_segment = 0
-        self._optimizer = torch.optim.SGD(self._net.parameters(), lr=0.02)
+        self._optimizer = torch.optim.SGD(self._net.parameters(), lr=0.5)
 
         self._segment_count = 64
         self._discount_factor = 0.01
@@ -66,7 +66,8 @@ class AiDriver(Driver):
         self._current_segment = segment
 
     def get_estimate_laptime_remaining(self, lap_start):
-        return (
+        curr_time = time.time() - lap_start
+        return curr_time + (
             self.get_avg_laptime() * float(self._segment_count - self._current_segment) / float(self._segment_count)
         )
 

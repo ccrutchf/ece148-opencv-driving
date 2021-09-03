@@ -8,7 +8,7 @@ model_files = [f + e for f, e in model_files if "model" in f and e == ".dat"]
 
 model_files_by_time = [(datetime.datetime.fromtimestamp(pathlib.Path(f).stat().st_mtime), f) for f in model_files]
 
-after_time = datetime.datetime(2021, 8, 31, 0, 0, 0)
+after_time = datetime.datetime(2021, 9, 2, 2, 11, 0)
 
 models_after_time = [m for d, m in model_files_by_time if d >= after_time]
 
