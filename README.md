@@ -1,5 +1,8 @@
 # PonyCar
-This project provides a framework for controlling a four-wheel vehicle with Ackermann steering with an RGB camera.  Examples of such cars can be found here.  This project is largely focused on improving laps around a predetermined tracks.  Images of example tracks can be found here.
+This project provides a framework for controlling a four-wheel vehicle with Ackermann steering with an RGB camera. This project is largely 
+focused on improving laps around a predetermined tracks.
+
+[![PonyCar Test 1](https://img.youtube.com/vi/OqblKRJka-A/0.jpg)](https://www.youtube.com/watch?v=OqblKRJka-A)
 
 ## RGB Camera
 This project uses an RGB camera which is then scaled down to 160x120 to reduce evaluation time for functionality which uses this camera.
@@ -22,5 +25,3 @@ The reinfocement learning code assumes a pretrained model using supervised learn
 The main entry point for the car code is `rl.py`.  All packages are defined in the `pyproject.toml` file.  In order to peform training, we will use `train.py`.
 
 In `rl.py`, line 33 and line 34 controls which driver is used for driving the vehicle.  Line 58 controls if the car saves data.
-
-[![PonyCar Test 1](https://img.youtube.com/vi/OqblKRJka-A/0.jpg)](https://www.youtube.com/watch?v=OqblKRJka-A)
