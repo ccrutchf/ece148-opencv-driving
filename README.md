@@ -24,4 +24,3 @@ The main entry point for the car code is `rl.py`.  All packages are defined in t
 In `rl.py`, line 33 and line 34 controls which driver is used for driving the vehicle.  Line 58 controls if the car saves data.
 
 [![PonyCar Test 1](https://img.youtube.com/vi/OqblKRJka-A/0.jpg)](https://www.youtube.com/watch?v=OqblKRJka-A)
-https://youtu.be/OqblKRJka-A
