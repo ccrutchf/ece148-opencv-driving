@@ -13,5 +13,15 @@ In order to allow for autonomous control, we provide a three-layer network.  The
 ### Refinfocement
 With the goal of reducing progressive laptimes, we reward faster lap segments and heavily penalize any time the car attempts to leave the track.  In order to detect the track, we have added additional OpenCV processing to detect the lane, detect track segment, and detect start/finish line.
 
+The reinfocement learning code assumes a pretrained model using supervised learning as a starting point.  This was selected to make the reinforement training simplier than starting from scratch.
+
 #### Laptime Plot
 ![Laptimes vs Epocs](imgs/laptime_plot.png)
+
+## Summary of Code
+The main entry point for the car code is `rl.py`.  All packages are defined in the `pyproject.toml` file.  In order to peform training, we will use `train.py`.
+
+In `rl.py`, line 33 and line 34 controls which driver is used for driving the vehicle.  Line 58 controls if the car saves data.
+
+[![PonyCar Test 1](https://img.youtube.com/vi/OqblKRJka-A/0.jpg)](https://www.youtube.com/watch?v=OqblKRJka-A)
+https://youtu.be/OqblKRJka-A
